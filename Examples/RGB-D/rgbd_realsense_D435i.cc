@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
              << endl;
         return 1;
     }
-
+    
     string file_name;
     bool bFileName = false;
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
         file_name = string(argv[argc - 1]);
         bFileName = true;
     }
-
+    
     struct sigaction sigIntHandler;
 
     sigIntHandler.sa_handler = exit_loop_handler;
@@ -140,20 +140,20 @@ int main(int argc, char **argv) {
     std::vector<rs2::sensor> sensors = selected_device.query_sensors();
     int index = 0;
     // We can now iterate the sensors and print their names
-    for (rs2::sensor sensor : sensors)
+    for (rs2::sensor sensor : sensors){
         if (sensor.supports(RS2_CAMERA_INFO_NAME)) {
             ++index;
+            std::cout << "\t" << index << " : " << sensor.get_info(RS2_CAMERA_INFO_NAME) << std::endl;
             if (index == 1) {
                 sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 1);
-                sensor.set_option(RS2_OPTION_AUTO_EXPOSURE_LIMIT,50000);
+                // sensor.set_option(RS2_OPTION_AUTO_EXPOSURE_LIMIT, 50000);
                 sensor.set_option(RS2_OPTION_EMITTER_ENABLED, 1); // emitter on for depth information
             }
-            // std::cout << "  " << index << " : " << sensor.get_info(RS2_CAMERA_INFO_NAME) << std::endl;
+            
             get_sensor_option(sensor);
             if (index == 2){
                 // RGB camera
                 sensor.set_option(RS2_OPTION_EXPOSURE,80.f);
-
             }
 
             if (index == 3){
@@ -161,6 +161,7 @@ int main(int argc, char **argv) {
             }
 
         }
+    }
 
     // Declare RealSense pipeline, encapsulating the actual device and sensors
     rs2::pipeline pipe;
@@ -323,7 +324,7 @@ int main(int argc, char **argv) {
             if(!image_ready)
                 cond_image_rec.wait(lk);
 
-#ifdef COMPILEDWITHC11
+#ifdef COMPILEDWITHC14
             std::chrono::steady_clock::time_point time_Start_Process = std::chrono::steady_clock::now();
 #else
             std::chrono::monotonic_clock::time_point time_Start_Process = std::chrono::monotonic_clock::now();
@@ -359,7 +360,7 @@ int main(int argc, char **argv) {
         if(imageScale != 1.f)
         {
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
             std::chrono::steady_clock::time_point t_Start_Resize = std::chrono::steady_clock::now();
     #else
             std::chrono::monotonic_clock::time_point t_Start_Resize = std::chrono::monotonic_clock::now();
@@ -371,7 +372,7 @@ int main(int argc, char **argv) {
             cv::resize(depth, depth, cv::Size(width, height));
 
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
             std::chrono::steady_clock::time_point t_End_Resize = std::chrono::steady_clock::now();
     #else
             std::chrono::monotonic_clock::time_point t_End_Resize = std::chrono::monotonic_clock::now();
@@ -382,7 +383,7 @@ int main(int argc, char **argv) {
         }
 
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
         std::chrono::steady_clock::time_point t_Start_Track = std::chrono::steady_clock::now();
     #else
         std::chrono::monotonic_clock::time_point t_Start_Track = std::chrono::monotonic_clock::now();
@@ -392,7 +393,7 @@ int main(int argc, char **argv) {
         SLAM.TrackRGBD(im, depth, timestamp); //, vImuMeas); depthCV
 
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
         std::chrono::steady_clock::time_point t_End_Track = std::chrono::steady_clock::now();
     #else
         std::chrono::monotonic_clock::time_point t_End_Track = std::chrono::monotonic_clock::now();

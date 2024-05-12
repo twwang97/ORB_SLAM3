@@ -40,7 +40,6 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-
 namespace ORB_SLAM3
 {
 
@@ -209,7 +208,7 @@ private:
     KeyFrameDatabase* mpKeyFrameDatabase;
 
     // Map structure that stores the pointers to all KeyFrames and MapPoints.
-    //Map* mpMap;
+    Map* mpMap; // modified on Feb. 12, 2023
     Atlas* mpAtlas;
 
     // Tracker. It receives a frame and computes the associated camera pose.

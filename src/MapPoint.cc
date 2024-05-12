@@ -195,7 +195,6 @@ void MapPoint::EraseObservation(KeyFrame* pKF)
                 bBad=true;
         }
     }
-
     if(bBad)
         SetBadFlag();
 }
@@ -570,7 +569,7 @@ void MapPoint::UpdateMap(Map* pMap)
 }
 
 void MapPoint::PreSave(set<KeyFrame*>& spKF,set<MapPoint*>& spMP)
-{
+{     
     mBackupReplacedId = -1;
     if(mpReplaced && spMP.find(mpReplaced) != spMP.end())
         mBackupReplacedId = mpReplaced->mnId;
@@ -590,6 +589,12 @@ void MapPoint::PreSave(set<KeyFrame*>& spKF,set<MapPoint*>& spMP)
         {
             EraseObservation(pKFi);
         }
+        
+        if (mObservations.size() <= 0) // added on July 24, 2023
+        {
+            break; 
+        }
+            
     }
 
     // Save the id of the reference KF

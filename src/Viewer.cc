@@ -164,7 +164,7 @@ void Viewer::Run()
     mbFinished = false;
     mbStopped = false;
 
-    pangolin::CreateWindowAndBind("ORB-SLAM3: Map Viewer",1024,768);
+    pangolin::CreateWindowAndBind(GLOBAL_MAP_WINDOW_NAME,1024,768);
 
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
@@ -204,7 +204,7 @@ void Viewer::Run()
     Twc.SetIdentity();
     pangolin::OpenGlMatrix Ow; // Oriented with g in the z axis
     Ow.SetIdentity();
-    cv::namedWindow("ORB-SLAM3: Current Frame");
+    cv::namedWindow(CURRENT_FRAME_WINDOW_NAME);
 
     bool bFollow = true;
     bool bLocalizationMode = false;
@@ -335,8 +335,8 @@ void Viewer::Run()
             cv::resize(toShow, toShow, cv::Size(width, height));
         }
 
-        cv::imshow("ORB-SLAM3: Current Frame",toShow);
-        cv::waitKey(mT);
+        // cv::imshow(CURRENT_FRAME_WINDOW_NAME,toShow); //////////// modified on 2023
+        // cv::waitKey(mT); //////////// modified on 2023
 
         if(menuReset)
         {
@@ -363,8 +363,8 @@ void Viewer::Run()
             mpSystem->Shutdown();
 
             // Save camera trajectory
-            mpSystem->SaveTrajectoryEuRoC("CameraTrajectory.txt");
-            mpSystem->SaveKeyFrameTrajectoryEuRoC("KeyFrameTrajectory.txt");
+            mpSystem->SaveTrajectoryEuRoC("results/CameraTrajectory.txt");
+            mpSystem->SaveKeyFrameTrajectoryEuRoC("results/KeyFrameTrajectory.txt");
             menuStop = false;
         }
 

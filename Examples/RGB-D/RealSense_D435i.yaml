@@ -1,6 +1,18 @@
 %YAML:1.0
 
 #--------------------------------------------------------------------------------------------
+# System config
+#--------------------------------------------------------------------------------------------
+
+# When the variables are commented, the system doesn't load a previous session or not store the current one
+
+# If the LoadFile doesn't exist, the system give a message and create a new Atlas from scratch
+# System.LoadAtlasFromFile: "./results/Session_RealSense_D435i_Atlas"
+
+# The store file is created from the current session, if a file with the same name exists it is deleted
+# System.SaveAtlasToFile: "./results/Session_RealSense_D435i_Atlas"
+
+#--------------------------------------------------------------------------------------------
 # Camera Parameters. Adjust them!
 #--------------------------------------------------------------------------------------------
 File.version: "1.0"
@@ -12,6 +24,10 @@ Camera1.fx: 617.201
 Camera1.fy: 617.362
 Camera1.cx: 324.637
 Camera1.cy: 242.462
+# Camera1.fx: 617.2
+# Camera1.fy: 609.5
+# Camera1.cx: 315.2
+# Camera1.cy: 218.1
 
 
 # distortion parameters
@@ -19,6 +35,11 @@ Camera1.k1: 0.0
 Camera1.k2: 0.0
 Camera1.p1: 0.0
 Camera1.p2: 0.0
+# Camera1.k1: -0.078099
+# Camera1.k2: 1.391195
+# Camera1.p1: -0.008579
+# Camera1.p2: -0.000432
+# Camera1.k3: -4.555212
 
 # Camera resolution
 Camera.width: 640
@@ -36,25 +57,26 @@ Stereo.b: 0.0745
 
 # Depth map values factor
 RGBD.DepthMapFactor: 1000.0
+# RGBD.DepthMapFactor: 3.89105 # = 255 / 65.535
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1250
+ORBextractor.nFeatures: 1250 # 1250
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
-ORBextractor.scaleFactor: 1.2
+ORBextractor.scaleFactor: 1.2 # 1.2
 
 # ORB Extractor: Number of levels in the scale pyramid	
-ORBextractor.nLevels: 8
+ORBextractor.nLevels: 8 # 8
 
 # ORB Extractor: Fast threshold
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast			
-ORBextractor.iniThFAST: 20
-ORBextractor.minThFAST: 7
+ORBextractor.iniThFAST: 20 # 20
+ORBextractor.minThFAST: 7 # 7
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

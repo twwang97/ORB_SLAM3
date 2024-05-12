@@ -321,7 +321,6 @@ void Atlas::PreSave()
     {
         if(!pMi || pMi->IsBad())
             continue;
-
         if(pMi->GetAllKeyFrames().size() == 0) {
             // Empty map, erase before of save it.
             SetMapBad(pMi);

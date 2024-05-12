@@ -28,6 +28,10 @@
 
 #include <mutex>
 
+// #define CURRENT_FRAME_WINDOW_NAME "ORB-SLAM3: Current Frame" ////////////
+#define CURRENT_FRAME_WINDOW_NAME "Current Frame"
+#define GLOBAL_MAP_WINDOW_NAME "ORB-SLAM3: Map Viewer"
+
 namespace ORB_SLAM3
 {
 

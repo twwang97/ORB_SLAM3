@@ -24,6 +24,8 @@
 namespace ORB_SLAM3
 {
 
+// Sophus::SE3f Tw_current_keyframe; // modified on Feb. 11, 2023
+
 long unsigned int Map::nNextId=0;
 
 Map::Map():mnMaxKFid(0),mnBigChangeIdx(0), mbImuInitialized(false), mnMapChange(0), mpFirstRegionKF(static_cast<KeyFrame*>(NULL)),
@@ -66,6 +68,7 @@ void Map::AddKeyFrame(KeyFrame *pKF)
         mpKFinitial = pKF;
         mpKFlowerID = pKF;
     }
+
     mspKeyFrames.insert(pKF);
     if(pKF->mnId>mnMaxKFid)
     {
@@ -75,6 +78,22 @@ void Map::AddKeyFrame(KeyFrame *pKF)
     {
         mpKFlowerID = pKF;
     }
+    
+    
+    // this->Tw_current_keyframe = pKF->GetPoseInverse();
+    // Sophus::SE3f Tw_current_keyframe = pKF->GetPoseInverse();
+    Tw_current_keyframe = pKF->GetPoseInverse();
+
+    lock.unlock(); // Unlock the mutex
+
+    Eigen::Quaternionf q = Tw_current_keyframe.unit_quaternion();
+    Eigen::Vector3f t = Tw_current_keyframe.translation();
+    printf("map KFtraj %.2fs,\tt:(%.3f,%.3f,%.3f),\tq:(%.4f,%.4f,%.4f,%.4f)\n", pKF->mTimeStamp, 
+                                t(0), t(1), t(2), q.x(), q.y(), q.z(), q.w());
+}
+
+Sophus::SE3f Map::return_keyframe_Twc(){
+    return Tw_current_keyframe; 
 }
 
 void Map::AddMapPoint(MapPoint *pMP)
@@ -387,17 +406,23 @@ void Map::PreSave(std::set<GeometricCamera*> &spCams)
         mvBackupKeyFrameOriginsId.push_back(mvpKeyFrameOrigins[i]->mnId);
     }
 
-
     // Backup of MapPoints
     mvpBackupMapPoints.clear();
-    for(MapPoint* pMPi : mspMapPoints)
+    std::vector<MapPoint*> tempBackupMapPoints;
+    for(MapPoint* pMPi : mspMapPoints) // added on July 24, 2023
+        tempBackupMapPoints.push_back(pMPi); 
+    // for(MapPoint* pMPi : mspMapPoints) // commented out on July 24, 2023
+    for(MapPoint* pMPi : tempBackupMapPoints)
     {
         if(!pMPi || pMPi->isBad())
+        {
             continue;
+        }
 
-        mvpBackupMapPoints.push_back(pMPi);
+        mvpBackupMapPoints.push_back(pMPi); 
         pMPi->PreSave(mspKeyFrames,mspMapPoints);
     }
+    tempBackupMapPoints.clear(); 
 
     // Backup of KeyFrames
     mvpBackupKeyFrames.clear();
@@ -421,10 +446,12 @@ void Map::PreSave(std::set<GeometricCamera*> &spCams)
     {
         mnBackupKFlowerID = mpKFlowerID->mnId;
     }
-
 }
 
-void Map::PostLoad(KeyFrameDatabase* pKFDB, ORBVocabulary* pORBVoc/*, map<long unsigned int, KeyFrame*>& mpKeyFrameId*/, map<unsigned int, GeometricCamera*> &mpCams)
+void Map::PostLoad(KeyFrameDatabase* pKFDB, 
+                    ORBVocabulary* pORBVoc, 
+                    // map<long unsigned int, KeyFrame*>& mpKeyFrameId, 
+                    map<unsigned int, GeometricCamera*> &mpCams)
 {
     std::copy(mvpBackupMapPoints.begin(), mvpBackupMapPoints.end(), std::inserter(mspMapPoints, mspMapPoints.begin()));
     std::copy(mvpBackupKeyFrames.begin(), mvpBackupKeyFrames.end(), std::inserter(mspKeyFrames, mspKeyFrames.begin()));

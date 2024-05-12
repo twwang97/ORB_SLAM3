@@ -23,6 +23,8 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 
+#include "main_utils.h" // modified on Feb. 11, 2023
+
 #include <set>
 #include <pangolin/pangolin.h>
 #include <mutex>
@@ -155,6 +157,11 @@ public:
     std::set<long unsigned int> msOptKFs;
     std::set<long unsigned int> msFixedKFs;
 
+    // global variable
+    Sophus::SE3f Tw_current_keyframe; // modified on Feb. 11, 2023
+    // KeyFrame* pKF_current; // modified on Feb. 11, 2023
+    Sophus::SE3f return_keyframe_Twc(); 
+
 protected:
 
     long unsigned int mnId;
@@ -200,9 +207,9 @@ protected:
 
     // Mutex
     std::mutex mMutexMap;
-
 };
 
 } //namespace ORB_SLAM3
+
 
 #endif // MAP_H

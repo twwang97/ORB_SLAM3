@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     cout.precision(17);
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR,false, 0, file_name);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR,true, 0, file_name);
     float imageScale = SLAM.GetImageScale();
 
     double t_resize = 0.f;
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
             if(imageScale != 1.f)
             {
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
                 std::chrono::steady_clock::time_point t_Start_Resize = std::chrono::steady_clock::now();
     #else
                 std::chrono::monotonic_clock::time_point t_Start_Resize = std::chrono::monotonic_clock::now();
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
                 int height = im.rows * imageScale;
                 cv::resize(im, im, cv::Size(width, height));
 #ifdef REGISTER_TIMES
-    #ifdef COMPILEDWITHC11
+    #ifdef COMPILEDWITHC14
                 std::chrono::steady_clock::time_point t_End_Resize = std::chrono::steady_clock::now();
     #else
                 std::chrono::monotonic_clock::time_point t_End_Resize = std::chrono::monotonic_clock::now();
@@ -208,8 +208,8 @@ int main(int argc, char **argv)
     }
     else
     {
-        SLAM.SaveTrajectoryEuRoC("CameraTrajectory.txt");
-        SLAM.SaveKeyFrameTrajectoryEuRoC("KeyFrameTrajectory.txt");
+        SLAM.SaveTrajectoryEuRoC("results/CameraTrajectory.txt");
+        SLAM.SaveKeyFrameTrajectoryEuRoC("results/KeyFrameTrajectory.txt");
     }
 
     sort(vTimesTrack.begin(),vTimesTrack.end());

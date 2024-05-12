@@ -155,6 +155,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         //clock_t start = clock();
         cout << "Initialization of Atlas from file: " << mStrLoadAtlasFromFile << endl;
         bool isRead = LoadAtlas(FileType::BINARY_FILE);
+        // bool isRead = LoadAtlas(FileType::TEXT_FILE);
 
         if(!isRead)
         {
@@ -389,10 +390,17 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const
 
     Sophus::SE3f Tcw = mpTracker->GrabImageRGBD(imToFeed,imDepthToFeed,timestamp,filename);
 
+    ////////// modified on Feb. 12, 2023
+    // Sophus::SE3f Tcw_keyframe = mpMap->return_keyframe_Twc(); 
+    // Eigen::Vector3f t = Tcw.translation();
+    // Eigen::Quaternionf q = Tcw.unit_quaternion();
+    ////////////////////////
+
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+
     return Tcw;
 }
 
@@ -523,36 +531,41 @@ void System::Shutdown()
 
     mpLocalMapper->RequestFinish();
     mpLoopCloser->RequestFinish();
-    /*if(mpViewer)
+    
+    if(mpViewer)
     {
         mpViewer->RequestFinish();
         while(!mpViewer->isFinished())
             usleep(5000);
-    }*/
+    }
 
     // Wait until all thread have effectively stopped
-    /*while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
+    while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
     {
         if(!mpLocalMapper->isFinished())
-            cout << "mpLocalMapper is not finished" << endl;*/
-        /*if(!mpLoopCloser->isFinished())
+            cout << "mpLocalMapper is not finished" << endl;
+        if(!mpLoopCloser->isFinished())
             cout << "mpLoopCloser is not finished" << endl;
         if(mpLoopCloser->isRunningGBA()){
             cout << "mpLoopCloser is running GBA" << endl;
             cout << "break anyway..." << endl;
-            break;
-        }*/
-        /*usleep(5000);
-    }*/
+            // break; /////////////
+        }
+        cout << "start to sleep for 2 sec" << endl; 
+        usleep(2*1e6); // 2 sec
+    }
+    usleep(2*1e6); // 2 sec
+    
 
     if(!mStrSaveAtlasToFile.empty())
     {
         Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile, Verbose::VERBOSITY_NORMAL);
         SaveAtlas(FileType::BINARY_FILE);
+        // SaveAtlas(FileType::TEXT_FILE);
     }
 
-    /*if(mpViewer)
-        pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
+    if(mpViewer)
+        pangolin::BindToContext("ORB-SLAM2: Map Viewer");
 
 #ifdef REGISTER_TIMES
     mpTracker->PrintTimeStats();
@@ -568,7 +581,7 @@ bool System::isShutDown() {
 
 void System::SaveTrajectoryTUM(const string &filename)
 {
-    cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
+    cout << endl << "[TUM] Saving camera trajectory to " << filename << " ..." << endl;
     if(mSensor==MONOCULAR)
     {
         cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular." << endl;
@@ -709,10 +722,10 @@ void System::SaveTrajectoryEuRoC(const string &filename)
     list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
     list<bool>::iterator lbL = mpTracker->mlbLost.begin();
 
-    //cout << "size mlpReferences: " << mpTracker->mlpReferences.size() << endl;
-    //cout << "size mlRelativeFramePoses: " << mpTracker->mlRelativeFramePoses.size() << endl;
-    //cout << "size mpTracker->mlFrameTimes: " << mpTracker->mlFrameTimes.size() << endl;
-    //cout << "size mpTracker->mlbLost: " << mpTracker->mlbLost.size() << endl;
+    cout << "size mlpReferences: " << mpTracker->mlpReferences.size() << endl;
+    cout << "size mlRelativeFramePoses: " << mpTracker->mlRelativeFramePoses.size() << endl;
+    cout << "size mpTracker->mlFrameTimes: " << mpTracker->mlFrameTimes.size() << endl;
+    cout << "size mpTracker->mlbLost: " << mpTracker->mlbLost.size() << endl;
 
 
     for(auto lit=mpTracker->mlRelativeFramePoses.begin(),
@@ -771,7 +784,7 @@ void System::SaveTrajectoryEuRoC(const string &filename)
 
         // cout << "5" << endl;
     }
-    //cout << "end saving trajectory" << endl;
+
     f.close();
     cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
 }
@@ -1404,15 +1417,13 @@ void System::SaveAtlas(int type){
     if(!mStrSaveAtlasToFile.empty())
     {
         //clock_t start = clock();
-
         // Save the current session
         mpAtlas->PreSave();
-
         string pathSaveFileName = "./";
         pathSaveFileName = pathSaveFileName.append(mStrSaveAtlasToFile);
         pathSaveFileName = pathSaveFileName.append(".osa");
 
-        string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath,TEXT_FILE);
+        string strVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, BINARY_FILE);
         std::size_t found = mStrVocabularyFilePath.find_last_of("/\\");
         string strVocabularyName = mStrVocabularyFilePath.substr(found+1);
 
@@ -1487,7 +1498,7 @@ bool System::LoadAtlas(int type)
     if(isRead)
     {
         //Check if the vocabulary is the same
-        string strInputVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath,TEXT_FILE);
+        string strInputVocabularyChecksum = CalculateCheckSum(mStrVocabularyFilePath, BINARY_FILE);
 
         if(strInputVocabularyChecksum.compare(strVocChecksum) != 0)
         {
